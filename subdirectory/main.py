@@ -1,0 +1,77 @@
+import os
+import streamlit as st
+import pickle
+import time
+from langchain_groq import ChatGroq
+from langchain_classic.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import UnstructuredURLLoader
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+# from dotenv import load_dotenv
+
+# load_dotenv()
+key = st.secrets["GROQ_API_KEY"]
+
+st.title("News Research Tool 📈")
+st.sidebar.title("News Article URLs")
+
+urls=[]
+for i in range(3):
+    url = st.sidebar.text_input(f"URL {i+1}")
+    urls.append(url)
+
+process_url_clicked = st.sidebar.button("Process URLs")
+file_path = "../faiss_store.pkl"
+llm = ChatGroq(
+    api_key=key,
+    model="llama-3.3-70b-versatile",
+    temperature=0.6
+)
+
+main_placefolder = st.empty()
+if process_url_clicked:
+    # load data
+    loader = UnstructuredURLLoader(urls=urls)
+    main_placefolder.text("Data Loading...Started...✅️✅️✅️")
+    data = loader.load()
+    # split data
+    text_splitter = RecursiveCharacterTextSplitter(
+        separators=["\n\n", "\n", ".", " "],
+        chunk_size=1000
+    )
+    main_placefolder.text("Text Splitting...Started...✅️✅️✅️")
+    docs = text_splitter.split_documents(data)
+    # create embeddings and save to FAISS index
+    embeddings = HuggingFaceEmbeddings(
+        model="all-MiniLM-L6-v2"
+    )
+    vector_store = FAISS.from_documents(docs, embeddings)
+    main_placefolder.text("Embedding Vectors Started Building...Started...✅️✅️✅️")
+    time.sleep(2)
+
+    # Save th FAISS index to a pickle file
+    with open(file_path, "wb") as f:
+        pickle.dump(vector_store, f)
+
+query = main_placefolder.text_input("Question: ")
+if query:
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            vectorStore = pickle.load(f)
+            chain = RetrievalQAWithSourcesChain.from_llm(
+                llm=llm,
+                retriever=vectorStore.as_retriever()
+            )
+            result = chain({"question": query}, return_only_outputs=True)
+            # {"answer": "", "sources": [] }
+            st.header("Answer")
+            st.write(result.get("answer"))
+
+            # Display sources if available
+            sources = result.get("sources", "")
+            if sources:
+                st.subheader("Sources:")
+                sources_list = sources.split("\n") # split the sources by newline
+                for source in sources_list:
+                    st.write(source)
