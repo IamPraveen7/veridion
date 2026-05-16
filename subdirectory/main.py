@@ -20,7 +20,7 @@ urls=[]
 for i in range(3):
     url = st.sidebar.text_input(f"URL {i+1}")
     urls.append(url.strip())
-
+urls = [u.strip() for u in urls if u.strip()] # 4
 process_url_clicked = st.sidebar.button("Process URLs")
 file_path = "faiss_store.pkl"
 llm = ChatGroq(
@@ -28,38 +28,41 @@ llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.6
 )
+@st.cache_resource # 3
+def load_embedding_model():
+    return HuggingFaceEmbeddings(
+        model_name="all-MiniLM-L6-v2"
+    )
+embedding_model = load_embedding_model()
 
-main_placefolder = st.empty()
+status_placeholder = st.empty() # 5
 if process_url_clicked:
     # load data
     loader = UnstructuredURLLoader(urls=urls)
-    main_placefolder.text("Data Loading...Started...✅️✅️✅️")
+    status_placeholder.text("Data Loading...Started...✅️✅️✅️")
     data = loader.load()
     # split data
     text_splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", ".", " "],
         chunk_size=1000
     )
-    main_placefolder.text("Text Splitting...Started...✅️✅️✅️")
+    status_placeholder.text("Text Splitting...Started...✅️✅️✅️")
     docs = text_splitter.split_documents(data)
     # create embeddings and save to FAISS index
-    embedding_model = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2"
-    )
     if embedding_model is not None:
         print("Embeddings Loaded...")
     vector_store = FAISS.from_documents(
         documents=docs,
         embedding=embedding_model,
     )
-    main_placefolder.text("Embedding Vectors Started Building...Started...✅️✅️✅️")
+    status_placeholder.text("Embedding Vectors Started Building...Started...✅️✅️✅️")
     time.sleep(2)
 
     # Save th FAISS index to a pickle file
     with open(file_path, "wb") as f:
         pickle.dump(vector_store, f)
 
-query = main_placefolder.text_input("Question: ")
+query = st.text_input("Question: ")
 if query:
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
