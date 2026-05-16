@@ -19,7 +19,7 @@ st.sidebar.title("News Article URLs")
 urls=[]
 for i in range(3):
     url = st.sidebar.text_input(f"URL {i+1}")
-    urls.append(url)
+    urls.append(url.strip())
 
 process_url_clicked = st.sidebar.button("Process URLs")
 file_path = "../faiss_store.pkl"
@@ -43,10 +43,12 @@ if process_url_clicked:
     main_placefolder.text("Text Splitting...Started...✅️✅️✅️")
     docs = text_splitter.split_documents(data)
     # create embeddings and save to FAISS index
-    embeddings = HuggingFaceEmbeddings(
+    embedding_model = HuggingFaceEmbeddings(
         model="all-MiniLM-L6-v2"
     )
-    vector_store = FAISS.from_documents(docs, embeddings)
+    if embedding_model is not None:
+        print("Embeddings Loaded...")
+    vector_store = FAISS.from_documents(docs, embedding_model)
     main_placefolder.text("Embedding Vectors Started Building...Started...✅️✅️✅️")
     time.sleep(2)
 
