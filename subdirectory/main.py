@@ -8,10 +8,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import UnstructuredURLLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# load_dotenv()
-key = st.secrets["GROQ_API_KEY"]
+load_dotenv()
+key = os.getenv("GROQ_API_KEY")
 
 st.title("News Research Tool 📈")
 st.sidebar.title("News Article URLs")
@@ -22,7 +22,7 @@ for i in range(3):
     urls.append(url.strip())
 
 process_url_clicked = st.sidebar.button("Process URLs")
-file_path = "../faiss_store.pkl"
+file_path = "faiss_store.pkl"
 llm = ChatGroq(
     api_key=key,
     model="llama-3.3-70b-versatile",
