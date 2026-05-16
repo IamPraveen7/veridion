@@ -48,7 +48,10 @@ if process_url_clicked:
     )
     if embedding_model is not None:
         print("Embeddings Loaded...")
-    vector_store = FAISS.from_documents(docs, embedding_model)
+    vector_store = FAISS.from_documents(
+        documents=docs,
+        embedding_model=embedding_model,
+    )
     main_placefolder.text("Embedding Vectors Started Building...Started...✅️✅️✅️")
     time.sleep(2)
 
