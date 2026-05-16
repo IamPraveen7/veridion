@@ -69,7 +69,7 @@ if process_url_clicked:
     # Save th FAISS index to a pickle file
     flag = vector_store.save_local("faiss_index")
 
-if not flag:
+if os.path.exists('faiss_index'):
     vectorStore = FAISS.load_local(
         "faiss_index",
         embeddings=embedding_model,
