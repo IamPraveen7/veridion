@@ -1,11 +1,11 @@
 import os
 import streamlit as st
-import pickle
+# import pickle
 import time
 from langchain_groq import ChatGroq
 from langchain_classic.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import UnstructuredURLLoader
+from langchain_community.document_loaders import WebBaseLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
@@ -21,12 +21,15 @@ for i in range(3):
     url = st.sidebar.text_input(f"URL {i+1}")
     urls.append(url.strip())
 urls = [u.strip() for u in urls if u.strip()] # 4
+
+
 process_url_clicked = st.sidebar.button("Process URLs")
 llm = ChatGroq(
     api_key=key,
     model="llama-3.3-70b-versatile",
     temperature=0.6
 )
+
 @st.cache_resource # 3
 def load_embedding_model():
     return HuggingFaceEmbeddings(
@@ -37,9 +40,12 @@ embedding_model = load_embedding_model()
 status_placeholder = st.empty() # 5
 if process_url_clicked:
     # load data
-    loader = UnstructuredURLLoader(urls=urls)
+    loader = WebBaseLoader(urls=urls)
     status_placeholder.text("Data Loading...Started...✅️✅️✅️")
     data = loader.load()
+    if not data:
+        st.error("No data loaded from URLs")
+        st.stop()
     # split data
     text_splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", ".", " "],
@@ -47,6 +53,9 @@ if process_url_clicked:
     )
     status_placeholder.text("Text Splitting...Started...✅️✅️✅️")
     docs = text_splitter.split_documents(data)
+    if not docs:
+        st.error("No documents created after splitting")
+        st.stop()
     # create embeddings and save to FAISS index
     if embedding_model is not None:
         print("Embeddings Loaded...")
@@ -58,10 +67,9 @@ if process_url_clicked:
     time.sleep(2)
 
     # Save th FAISS index to a pickle file
-    vector_store.save_local("faiss_index")
+    flag = vector_store.save_local("faiss_index")
 
-query = st.text_input("Question: ")
-if query:
+if not flag:
     vectorStore = FAISS.load_local(
         "faiss_index",
         embeddings=embedding_model,
@@ -71,6 +79,7 @@ if query:
         llm=llm,
         retriever=vectorStore.as_retriever()
     )
+    query = st.text_input("Question: ")
     result = chain({"question": query}, return_only_outputs=True)
     # {"answer": "", "sources": [] }
     st.header("Answer")
