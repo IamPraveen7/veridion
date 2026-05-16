@@ -50,7 +50,7 @@ if process_url_clicked:
         print("Embeddings Loaded...")
     vector_store = FAISS.from_documents(
         documents=docs,
-        embedding_model=embedding_model,
+        embedding=embedding_model,
     )
     main_placefolder.text("Embedding Vectors Started Building...Started...✅️✅️✅️")
     time.sleep(2)
