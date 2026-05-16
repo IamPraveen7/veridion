@@ -80,15 +80,16 @@ if os.path.exists('faiss_index'):
         retriever=vectorStore.as_retriever()
     )
     query = st.text_input("Question: ")
-    result = chain({"question": query}, return_only_outputs=True)
-    # {"answer": "", "sources": [] }
-    st.header("Answer")
-    st.write(result.get("answer"))
+    if query:
+        result = chain({"question": query}, return_only_outputs=True)
+        # {"answer": "", "sources": [] }
+        st.header("Answer")
+        st.write(result.get("answer"))
 
-    # Display sources if available
-    sources = result.get("sources", "")
-    if sources:
-        st.subheader("Sources:")
-        sources_list = sources.split("\n") # split the sources by newline
-        for source in sources_list:
-            st.write(source)
+        # Display sources if available
+        sources = result.get("sources", "")
+        if sources:
+            st.subheader("Sources:")
+            sources_list = sources.split("\n")  # split the sources by newline
+            for source in sources_list:
+                st.write(source)
