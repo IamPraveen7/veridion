@@ -22,7 +22,6 @@ for i in range(3):
     urls.append(url.strip())
 urls = [u.strip() for u in urls if u.strip()] # 4
 process_url_clicked = st.sidebar.button("Process URLs")
-file_path = "faiss_store.pkl"
 llm = ChatGroq(
     api_key=key,
     model="llama-3.3-70b-versatile",
@@ -59,27 +58,28 @@ if process_url_clicked:
     time.sleep(2)
 
     # Save th FAISS index to a pickle file
-    with open(file_path, "wb") as f:
-        pickle.dump(vector_store, f)
+    vector_store.save_local("faiss_index")
 
 query = st.text_input("Question: ")
 if query:
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            vectorStore = pickle.load(f)
-            chain = RetrievalQAWithSourcesChain.from_llm(
-                llm=llm,
-                retriever=vectorStore.as_retriever()
-            )
-            result = chain({"question": query}, return_only_outputs=True)
-            # {"answer": "", "sources": [] }
-            st.header("Answer")
-            st.write(result.get("answer"))
+    vectorStore = FAISS.load_local(
+        "faiss_index",
+        embeddings=embedding_model,
+        allow_dangerous_deserialization=True
+    )
+    chain = RetrievalQAWithSourcesChain.from_llm(
+        llm=llm,
+        retriever=vectorStore.as_retriever()
+    )
+    result = chain({"question": query}, return_only_outputs=True)
+    # {"answer": "", "sources": [] }
+    st.header("Answer")
+    st.write(result.get("answer"))
 
-            # Display sources if available
-            sources = result.get("sources", "")
-            if sources:
-                st.subheader("Sources:")
-                sources_list = sources.split("\n") # split the sources by newline
-                for source in sources_list:
-                    st.write(source)
+    # Display sources if available
+    sources = result.get("sources", "")
+    if sources:
+        st.subheader("Sources:")
+        sources_list = sources.split("\n") # split the sources by newline
+        for source in sources_list:
+            st.write(source)
