@@ -40,7 +40,7 @@ embedding_model = load_embedding_model()
 status_placeholder = st.empty() # 5
 if process_url_clicked:
     # load data
-    loader = WebBaseLoader(urls=urls)
+    loader = WebBaseLoader(urls)
     status_placeholder.text("Data Loading...Started...✅️✅️✅️")
     data = loader.load()
     if not data:
