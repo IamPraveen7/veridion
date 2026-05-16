@@ -44,7 +44,7 @@ if process_url_clicked:
     docs = text_splitter.split_documents(data)
     # create embeddings and save to FAISS index
     embedding_model = HuggingFaceEmbeddings(
-        model="all-MiniLM-L6-v2"
+        model_name="all-MiniLM-L6-v2"
     )
     if embedding_model is not None:
         print("Embeddings Loaded...")
