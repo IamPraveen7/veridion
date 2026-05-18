@@ -126,7 +126,7 @@ if "vector_store" in st.session_state:
         
         # {"answer": "", "sources": [] }
         st.header("Answer")
-        st.write(result.get("answer", "No answer found.")
+        st.write(result.get("answer", "No answer found."))
 
         # FIX 11: sources is comma-separated, not newline-separated
         # Display sources if available
