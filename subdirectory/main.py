@@ -80,7 +80,7 @@ if process_url_clicked:
         chunk_overlap=200
     )
     status_placeholder.text("Text Splitting...Done ✅✅✅")
-    docs = text_splitter.split_documents(data)
+    docs = text_splitter.split_documents(all_docs)
     
     if not docs:
         st.error("No documents created after splitting")
