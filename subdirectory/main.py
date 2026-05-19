@@ -20,7 +20,7 @@ def load_urls(urls):
         except Exception as e:
             failed_docs.append(url)
             st.warning(f"⚠️ Failed to load: {url} — {e}")
-    return all_docs, failed
+    return all_docs, failed_docs
 import os
 import trafilatura
 import streamlit as st
