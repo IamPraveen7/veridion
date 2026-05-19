@@ -1,4 +1,28 @@
+def load_urls(urls):
+    all_docs=[]
+    failed_docs=[]
+    for url in urls:
+        try:
+            downloaded = trafilatura.fetch_url(url)
+            text = trafilatura.extract(
+                downloaded,
+                include_comments=False,
+                include_tables=False,
+                no_fallback=False
+            )
+            if text:
+                all_docs.append(Document(
+                    page_content=text,
+                    metadata={"source": url}
+                ))
+            else:
+                failed.append(url)
+        except Exception as e:
+            failed.append(url)
+            st.warning(f"⚠️ Failed to load: {url} — {e}")
+    return all_docs, failed
 import os
+import trafilatura
 import streamlit as st
 # import pickle
 import time
@@ -48,23 +72,7 @@ if process_url_clicked:
         st.stop()
  
     # FIX 4: load URLs individually so we can report per-URL failures
-    all_docs = []
-    failed_urls = []
-    for url in urls:
-        try:
-            loader = WebBaseLoader([url])
-            loader.requests_kwargs = {"timeout": 10}  # FIX 5: add timeout
-            docs = loader.load()
-            if docs:
-                all_docs.extend(docs)
-            else:
-                failed_urls.append(url)
-        except Exception as e:
-            failed_urls.append(url)
-            st.warning(f"⚠️ Could not load: {url}\n\nReason: {e}")
- 
-    if failed_urls:
-        st.warning(f"Skipped {len(failed_urls)} URL(s) that could not be loaded.")
+    all_docs, failed_urls = load_urls(urls)
  
     if not all_docs:
         st.error("No content could be loaded from any of the provided URLs.")
