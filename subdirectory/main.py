@@ -16,9 +16,9 @@ def load_urls(urls):
                     metadata={"source": url}
                 ))
             else:
-                failed.append(url)
+                failed_docs.append(url)
         except Exception as e:
-            failed.append(url)
+            failed_docs.append(url)
             st.warning(f"⚠️ Failed to load: {url} — {e}")
     return all_docs, failed
 import os
