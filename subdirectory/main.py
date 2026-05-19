@@ -1,3 +1,18 @@
+import os
+import trafilatura
+import streamlit as st
+# import pickle
+import time
+from langchain_groq import ChatGroq
+from langchain_classic.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_classic.retrievers.multi_query import MultiQueryRetriever  # FIX 1: multi-query retriever
+from langchain_classic.schema import Document
+from dotenv import load_dotenv
+
 def load_urls(urls):
     all_docs=[]
     failed_docs=[]
@@ -21,19 +36,6 @@ def load_urls(urls):
             failed_docs.append(url)
             st.warning(f"⚠️ Failed to load: {url} — {e}")
     return all_docs, failed_docs
-import os
-import trafilatura
-import streamlit as st
-# import pickle
-import time
-from langchain_groq import ChatGroq
-from langchain_classic.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_classic.retrievers.multi_query import MultiQueryRetriever  # FIX 1: multi-query retriever
-from dotenv import load_dotenv
 
 load_dotenv()
 key = os.getenv("GROQ_API_KEY")
